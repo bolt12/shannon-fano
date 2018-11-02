@@ -147,7 +147,7 @@ compressToFile f s = let decodeTable = genDecodeTable . code . f $ s
                              fH <- openBinaryFile "out.bin" WriteMode
                              result <- return $ compress f s
                              case result of
-                                 Nothing -> return ()
+                                 Nothing -> hClose fH
                                  Just r  -> do
                                                 writeFile "decode.dat" (show decodeTable)
                                                 chunks <- return $ map string2dec . chunksOf 8 $ r
