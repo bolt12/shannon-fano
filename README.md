@@ -9,7 +9,7 @@ https://en.wikipedia.org/wiki/Shannon%E2%80%93Fano_coding
 ## Installing / Getting started
 
 I'm currently working to get this library on Hackage. So meanwhile
-you can start using it buy building it.
+you can start using it by building it.
 
 ```shell
 $ git clone https://github.com/bolt12/shannon-fano.git
