@@ -201,7 +201,7 @@ branch. Pull requests are warmly welcome.
 ## Links
 
 - Repository: https://github.com/bolt12/shannon-fano/
-- Issue tracker: https://github.com/your/shannon-fano/issues
+- Issue tracker: https://github.com/bolt12/shannon-fano/issues
 
 ## Licensing
 
