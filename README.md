@@ -139,7 +139,7 @@ $ time ./compress test2.txt
 
 real	0m30.411s
 user	0m27.930s
-sys	    0m2.187s
+sys     0m2.187s
 ```
 
 Compression:
@@ -161,7 +161,7 @@ $ time ./compress test3.txt
 
 real	0m0.511s
 user	0m0.489s
-sys	    0m0.017s
+sys     0m0.017s
 ```
 
 Compression:
@@ -181,7 +181,7 @@ $ time ./decompress decode.dat out.bin
 
 real	0m0.128s
 user	0m0.105s
-sys	    0m0.023s
+sys     0m0.023s
 ```
 
 ---
