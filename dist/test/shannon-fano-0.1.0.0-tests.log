@@ -1,0 +1,6 @@
+Test suite tests: RUNNING...
+prop_freq_id             : +++ OK, passed 100 tests; 38 discarded.
+prop_prob_id             : +++ OK, passed 100 tests; 46 discarded.
+prop_rev_table           : +++ OK, passed 100 tests.
+Test suite tests: PASS
+Test suite logged to: dist/test/shannon-fano-0.1.0.0-tests.log

@@ -43,15 +43,26 @@ build-type:          Simple
 
 -- Extra files to be distributed with the package, such as examples or a
 -- README.
-extra-source-files:  CHANGELOG.md
+extra-source-files:  CHANGELOG.md,
+                     README.md
 
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.10
 
 
+
+test-suite tests
+    type: exitcode-stdio-1.0
+    hs-source-dirs: tests
+    main-is: QuickTests.hs
+    build-depends:       base,
+                         shannon-fano,
+                         QuickCheck
+    default-language:    Haskell2010
+
 library
   -- Modules exported by the library.
-  -- exposed-modules:
+  exposed-modules: Codec.Compression.ShannonFano
 
   -- Modules included in this library but not exported.
   -- other-modules:
@@ -60,11 +71,16 @@ library
   -- other-extensions:
 
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.12 && <4.13
+  build-depends:       base >=4.12 && <4.13,
+                       bytestring,
+                       split >= 0.2.3.3 && < 0.3
 
   -- Directories containing source files.
-  hs-source-dirs:      src
+  --  hs-source-dirs:      
 
   -- Base language which the package is written in.
   default-language:    Haskell2010
+
+  -- Ghc option flags
+  ghc-options: -Wall
 

@@ -1,9 +1,11 @@
-module ShannonFano (
+module Codec.Compression.ShannonFano (
                    frequency, 
                    probability, 
                    compress, 
                    compressToFile,
                    code,
+                   genCodeTable,
+                   genDecodeTable,
                    readDecodeTable,
                    decode,
                    decompressFromFile
@@ -11,7 +13,7 @@ module ShannonFano (
 
 import Data.List (group, sort, sortBy)
 import Data.List.Split (chunksOf)
-import Data.Char (intToDigit, ord)
+import Data.Char (intToDigit)
 import Numeric (readInt, showIntAtBase)
 import System.IO
 import qualified Data.ByteString as BS
@@ -19,15 +21,18 @@ import qualified Data.ByteString as BS
 ----- * Auxiliar data types
 --
 
+-- | List with every character associated to its frequency/probability.
+--
 type Table a = [(Char, a)]
 
+-- | Intermediate structure used to create a 'CodeTable'.
 type Encoding a = [((Char, a), String)]
 
+-- | List of every character and its binary code.
 type CodeTable = [(Char, String)]
 
+-- | List of the binary code associated to its character.
 type DecodeTable = [(String, Char)]
-
-type Binary = [Int]
 
 ----- * Auxiliar functions
 split :: (a -> b) -> (a -> c) -> a -> (b, c)
@@ -36,17 +41,14 @@ split f g x = (f x, g x)
 (><) :: (a -> b) -> (c -> d) -> (a, c) -> (b, d)
 f >< g = split (f . fst) (g . snd)
 
-third :: (a, b, c) -> c
-third (a, b, c) = c
-
 divide :: (Ord a, Num a) => Encoding a -> (Encoding a, Encoding a)
 divide [] = ([],[])
 divide (h:t) = let index = divide' t [h] 1
                in (map (id >< (flip (++) "0"))) >< (map (id >< (flip (++) "1"))) $ splitAt index (h:t)
     where
         divide' [] _ i = i
-        divide' (h:t) l i | (sum $ map (snd . fst) (h:l)) < (sum $ map (snd . fst) t) = divide' t (h:l) (i+1) 
-                          | otherwise = i
+        divide' (x:xs) l i | (sum $ map (snd . fst) (x:xs)) < (sum $ map (snd . fst) xs) = divide' t (x:l) (i+1) 
+                           | otherwise = i
 
 encode :: Table a -> Encoding a
 encode = map (split id (const ""))
@@ -58,12 +60,6 @@ code' a = let (l,r) = divide a
              code'' []  = []
              code'' [x] = [x]
              code'' s   = code' s
-
-genCodeTable :: (Num a, Ord a) => Encoding a -> CodeTable
-genCodeTable = map (fst >< id)
-
-genDecodeTable :: (Num a, Ord a) => Encoding a -> DecodeTable
-genDecodeTable = map (split snd fst) . genCodeTable
 
 string2dec :: (Num a) => String -> a
 string2dec s = fst $ (readInt 2 c d s) !! 0
@@ -78,9 +74,9 @@ getFromBinary :: FilePath -> IO (Int, [Int])
 getFromBinary f = do
             fH <- openBinaryFile f ReadMode
             r <- BS.hGetContents fH
-            (l, words) <- return . split head tail . BS.unpack $ r
+            (l, wrds) <- return . split head tail . BS.unpack $ r
             hClose fH
-            return (fromIntegral l, map fromIntegral words)
+            return (fromIntegral l, map fromIntegral wrds)
 
 ----- * ShannonFano functions
 
@@ -102,6 +98,19 @@ probability s = sortBy cmp . map (split head prob) . group . sort $ s
                     cmp x y     = if snd x < snd y then GT else LT
                     prob x      = (fromIntegral $ length x) / (fromIntegral totalLength)
 
+-- | Generates a 'CodeTable'
+--
+genCodeTable :: (Num a, Ord a) => Encoding a -- ^ Input encoding
+             -> CodeTable -- ^ Resulting code table
+genCodeTable = map (fst >< id)
+
+-- | Generates a 'DecodeTable'
+--
+genDecodeTable :: (Num a, Ord a) => Encoding a -- ^ Input encoding
+               -> DecodeTable -- ^ Resulting decode table
+genDecodeTable = map (split snd fst) . genCodeTable
+
+
 -- | Given a 'Table' encodes it by applying the Shannon-fano
 --   algorithm.
 --
@@ -119,7 +128,7 @@ compress f s = let encoding  = code . f $ s
                    codeTable = genCodeTable encoding
                    in (go codeTable s)
                where
-                   go e []    = Just ""
+                   go _ []    = Just ""
                    go e (h:t) = (++) <$> lookup h e <*> go e t
 
 -- | Compresses a string to a file.
@@ -157,7 +166,7 @@ readDecodeTable fp = do
                 readDT :: String -> Maybe DecodeTable
                 readDT = fmap fst . safeHead . reads
                 safeHead []    = Nothing
-                safeHead (h:t) = Just h
+                safeHead (h:_) = Just h
                     
 -- | Decodes a 'String' (made out of 0's and 1's) given a 'DecodeTable'
 --
@@ -167,14 +176,14 @@ decode :: DecodeTable -- ^ Decoding table
 decode _ "" = Nothing
 decode dt (h:t) = decode' dt t [h]
     where
-        decode' dt [] l     = do
-            case (lookup l dt) of
+        decode' dtt [] l     = do
+            case (lookup l dtt) of
                 Nothing  -> Just ""
                 (Just r) -> (:) <$> (Just r) <*> (Just "")
-        decode' dt (h:t) l = do
-            case (lookup l dt) of
-                Nothing  -> decode' dt t (l++[h])
-                (Just r) -> (:) <$> (Just r) <*> (decode' dt t [h])
+        decode' dtt (x:xs) l = do
+            case (lookup l dtt) of
+                Nothing  -> decode' dtt xs (l++[x])
+                (Just r) -> (:) <$> (Just r) <*> (decode' dtt xs [x])
 
 -- | Decompresses a file given a decoding table file and a compressed
 --   binary file.
@@ -188,13 +197,13 @@ decompressFromFile :: FilePath -- ^ File holding the decoding table info
 decompressFromFile dtf bf rf = do
         rfH <- case rf of
                   ""        -> openFile "result.dat" WriteMode
-                  otherwise -> openFile rf WriteMode
+                  _ -> openFile rf WriteMode
         dt <- readDecodeTable dtf
         case dt of
             Nothing -> hClose rfH
             Just r  -> do
-                (l, words) <- getFromBinary bf
-                binaryString <- return $ fixBinary (l,words)
+                (l, wrds) <- getFromBinary bf
+                binaryString <- return $ fixBinary (l,wrds)
                 decompressed <- return $ decode r $ binaryString
                 case decompressed of
                     Nothing -> hClose rfH
