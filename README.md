@@ -116,7 +116,7 @@ $ time ./compress test.txt
 
 real	0m0.075s
 user	0m0.067s
-sys	    0m0.007s
+sys 0m0.007s
 ```
 
 Compression:
