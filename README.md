@@ -8,8 +8,18 @@ https://en.wikipedia.org/wiki/Shannon%E2%80%93Fano_coding
 
 ## Installing / Getting started
 
-I'm currently working to get this library on Hackage. So meanwhile
-you can start using it by building it.
+### Cabal
+
+This package is now availablein Hackage at https://hackage.haskell.org/package/shannon-fano-0.1.0.0
+
+So you just need to:
+
+```shell
+$ cabal update
+$ cabal install shannon-fano
+```
+
+### Manually
 
 ```shell
 $ git clone https://github.com/bolt12/shannon-fano.git
@@ -18,6 +28,15 @@ $ cabal configure
 $ cabal build
 $ cabal install
 ```
+
+#### Build documentation
+
+```shell
+$ cd shannon-fano/
+$ cabal haddock
+```
+
+### See for yourself
 
 You can see if it's correctly installed by going into ghci and see if you can import the
 library.
