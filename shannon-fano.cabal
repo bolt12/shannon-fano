@@ -57,11 +57,11 @@ executable shannon-fano
                        -rtsopts
                        -with-rtsopts=-N
 
-test-suite tests
+test-suite test
   import:              common-options
   type:                exitcode-stdio-1.0
   hs-source-dirs:      tests
-  main-is:             QuickTests.hs
+  main-is:             Main.hs
   build-depends:       base,
                        shannon-fano,
                        QuickCheck
