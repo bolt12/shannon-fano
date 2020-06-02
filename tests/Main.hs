@@ -11,7 +11,7 @@ instance Arbitrary ByteString where
 
 prop_id :: ByteString -> Bool
 prop_id s = let dt = genCodeTable s
-             in ((`decompress` dt) $ compress s) == Just s
+             in (`decompress` dt) (compress s) == Just s
 
 tests :: [(String, IO ())]
 tests = [ ("prop_id", quickCheck prop_id)

@@ -99,7 +99,7 @@ decompressWithLeftover = BSL.concat . aux . (tail &&& (fromEnum . compressChunk 
     aux ([], _) = []
     aux ([x], 0) = [x] -- If 0 then there is no need to truncate
     aux ([x], i) = [BSL.drop (toEnum (8 - i)) x]
-    aux ((x : xs), i) = x : aux (xs, i)
+    aux (x : xs, i) = x : aux (xs, i)
 
 -- | Creates a list of 'Bool's out of a bit.
 bitList :: Bits a => a -> [Bool]
