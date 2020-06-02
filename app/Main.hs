@@ -39,4 +39,3 @@ main = do
       case r of
         Left e -> print e >> hClose fH
         _ -> return ()
-  print (x :: Options Unwrapped)

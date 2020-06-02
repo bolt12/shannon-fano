@@ -4,8 +4,9 @@ module Codec.Compression.ShannonFano where
 
 import Codec.Compression.ShannonFano.Internal
 import Control.Arrow
-import Data.ByteString (ByteString)
+import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as BSL
 import Data.List (lookup, sortBy)
 import Data.Word (Word8)
 import System.IO
@@ -20,7 +21,7 @@ frequency ::
   Input ->
   -- | Resulting table
   Table Int
-frequency = map (BS.head &&& BS.length) . BS.group . BS.sort
+frequency = map (BSL.head &&& (fromEnum . BSL.length)) . BSL.group . BSL.fromStrict . BS.sort . BSL.toStrict
 
 -- | Gives the probability table of all characters in a string.
 probability ::
@@ -30,7 +31,7 @@ probability ::
   Table Float
 probability s =
   let table = frequency s
-      total = fromIntegral . BS.length $ s
+      total = fromIntegral . fromEnum . BSL.length $ s
    in map (second ((/ total) . fromIntegral)) table
 
 -- | Generates a 'DecodeTable'
@@ -48,12 +49,12 @@ genCodeTable s =
     aux :: (Table Float, Table Float) -> Table ByteString
     aux ([], []) = []
     aux ([(x, _)], [(y, _)]) = [(x, "0"), (y, "1")]
-    aux ([(x, _)], r) = (x, "0") : map (second (BS.append "1")) (aux (split r))
-    aux (l, [(y, _)]) = map (second (BS.append "0")) (aux (split l)) ++ [(y, "1")]
+    aux ([(x, _)], r) = (x, "0") : map (second (BSL.append "1")) (aux (split r))
+    aux (l, [(y, _)]) = map (second (BSL.append "0")) (aux (split l)) ++ [(y, "1")]
     aux (l, r) =
       let l2 = aux $ split l
           r2 = aux $ split r
-       in map (second (BS.append "0")) l2 ++ map (second (BS.append "1")) r2
+       in map (second (BSL.append "0")) l2 ++ map (second (BSL.append "1")) r2
 
 -- | Given a 'Table ByteString' compresses it by applying the Shannon-fano
 --   algorithm.
@@ -66,11 +67,11 @@ compress s = compressWithLeftover $ aux s (genCodeTable s)
   where
     aux :: ByteString -> Table ByteString -> ByteString
     aux s t
-      | BS.null s = BS.empty
+      | BSL.null s = BSL.empty
       | otherwise =
-        let (x, xs) = (BS.head &&& BS.tail) s
+        let (x, xs) = (BSL.head &&& BSL.tail) s
             (Just r) = lookup x t
-         in BS.append r (aux xs t)
+         in BSL.append r (aux xs t)
 
 -- | Decompresses a compressed 'ByteString', given a code table
 --
@@ -84,24 +85,24 @@ decompress ::
   -- | Result decompressed
   Maybe Input
 decompress s t
-  | BS.null s = Just BS.empty
-  | BS.null (decompressWithLeftover s) = Just BS.empty
+  | BSL.null s = Just BSL.empty
+  | BSL.null (decompressWithLeftover s) = Just BSL.empty
   | otherwise =
     let decomps = decompressWithLeftover s
-        (x, xs) = (BS.head &&& BS.tail) decomps
-     in aux (map (snd &&& fst) t) xs (BS.singleton x)
+        (x, xs) = (BSL.head &&& BSL.tail) decomps
+     in aux (map (snd &&& fst) t) xs (BSL.singleton x)
   where
     aux :: [(ByteString, Word8)] -> ByteString -> ByteString -> Maybe ByteString
     aux dt ls l =
-      if BS.null ls
+      if BSL.null ls
         then case lookup l dt of
           Nothing -> Just ""
-          Just r -> BS.cons <$> Just r <*> Just ""
+          Just r -> BSL.cons <$> Just r <*> Just ""
         else
-          let (h, t) = (BS.head &&& BS.tail) ls
+          let (h, t) = (BSL.head &&& BSL.tail) ls
            in case lookup l dt of
-                Nothing -> aux dt t (BS.append l (BS.singleton h))
-                (Just r) -> BS.cons <$> Just r <*> aux dt t (BS.singleton h)
+                Nothing -> aux dt t (BSL.append l (BSL.singleton h))
+                (Just r) -> BSL.cons <$> Just r <*> aux dt t (BSL.singleton h)
 
 -- | Reads contents from a handle and compresses it to a file.
 --
@@ -115,11 +116,11 @@ compressToFile ::
   String ->
   IO ()
 compressToFile h filename = do
-  contents <- BS.hGetContents h
+  contents <- BSL.hGetContents h
   let compressed = compress contents
       decodeTable = genCodeTable contents
-  writeFile (filename ++ ".dat") (show decodeTable)
-  BS.writeFile filename compressed
+  writeFile (filename ++ ".tab") (show decodeTable)
+  BSL.writeFile filename compressed
 
 -- | Decompresses a file given a decoding table file and a compressed
 --   compressed file.
@@ -132,8 +133,8 @@ decompressFromFile ::
   String ->
   IO (Either DecodeTableError ())
 decompressFromFile h dt filename = do
-  contents <- BS.hGetContents h
+  contents <- BSL.hGetContents h
   let decoded = decompress contents dt
   case decoded of
     Nothing -> return . Left $ DecodeTableError
-    Just r -> Right <$> BS.writeFile filename r
+    Just r -> Right <$> BSL.writeFile filename r

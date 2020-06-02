@@ -35,179 +35,130 @@ $ stack haddock
 
 ### See for yourself
 
-You can see if it's correctly installed by going into ghci and see if you can import the
-library.
+You can see if it's correctly installed by doing calling the program in the terminal. You
+should see the following:
 
 ```shell
-$ ghci
-> import Codec.Compression.ShannonFano
->
+> shannon-fano -h
+Compress contents using the Shannon-Fano algorithm
+
+Usage: shannon-fano [--decompress STRING] [--input STRING] [--output STRING]
+
+Available options:
+-h,--help                Show this help text
+--decompress STRING      Decompress with decode table file name.
+--input STRING           Input content file name. If not specified will be
+read from stdin.
+--output STRING          Output result file name. If not specified will be
+'out.bin' or 'out.bin.dat' depending on the action
 ```
 
 ## Use examples
 
-To get the compressed binary string of a certain value.
-
-```Haskell
-import Codec.Compression.ShannonFano
-
-main :: IO ()
-main = putStrLn . show . compress frequency $ "test"
-```
-
-And you should see.
+The program is able to read from stdin if no input file is provided like so:
 
 ```shell
-> main
-Just "010110"
+> shannon-fano
+test
+>
 ```
 
----
-
-To generate only the coding table of some value.
-
-```Haskell
-import Codec.Compression.ShannonFano
-
-main :: IO ()
-main = putStrLn . show . genCodeTable . code . frequency $ "test"
-```
-
-And you should see.
+This will create a 'out.bin' file and a 'out.bin.tab' file (which contains the decode
+table), which you can decompress:
 
 ```shell
-> main
-[('t',"0"),('e',"10"),('s',"11")]
+> shannon-fano --decompress out.bin.tab --input out.bin
 ```
 
----
-
-To make a program that compresses a given file.
-
-```Haskell
-import Codec.Compression.ShannonFano
-import System.Environment
-
-main :: IO ()
-main = do
-    [file] <- getArgs
-    content <- readFile file
-    compressTofile frequency content
-```
-
-And you should get two resulting files:
- - out.bin: Has the binary of the compressed data
- - decode.dat: Has the decoding table structure
-
----
-
-To make a program that decompresses a given binary file.
-
-```Haskell
-import Codec.Compression.ShannonFano
-import System.Environment
-
-main :: IO ()
-main = do
-    [decTableF, binaryF] <- getArgs
-    decompressFromFile decTableF binaryF ""
-```
-
-And you should get one resulting file:
- - result.dat: Has the binary of the compressed data
-
-You can check they are equal.
+If no output file name is provided, this should create a new file called 'out.dat':
 
 ```shell
-$ diff result.dat test.txt
-$
+> cat out.dat
+test
 ```
 
 ## Performance and compression
 
-Testing the compressor program for a lorem ipsum text file of 921 words:
+Testing the compressor program for a lorem ipsum text file of 1000 words:
 
 ```shell
-$ time ./compress test.txt
+> time shannon-fano --input test.txt
 
-real	0m0.075s
-user	0m0.067s
-sys     0m0.007s
+real    0m0.074s
+user    0m0.060s
+sys     0m0.025s
 ```
 
 Compression:
 
 ```shell
-$ ls -lh out.bin test.txt | cut -d " " -f5
-5.7K
-6.5K
+> ls -lh out.bin test.txt | cut -d " " -f5
+3.4K
+6.4K
 ```
 
-_Total ~ 12%_
+_Total ~ 47%_
 
 ---
 
 Testing the compressor program with 1M of random data:
 
 ```shell
-$ base64 /dev/urandom | head -c 1000000 > test2.txt
-$ time ./compress test2.txt
+> base64 /dev/urandom | head -c 1000000 > test.txt
+> time shannon-fano --input test.txt
 
-real	0m30.411s
-user	0m27.930s
-sys     0m2.187s
+real    0m2.648s
+user    0m2.321s
+sys     0m1.305s
 ```
 
 Compression:
 
 ```shell
-$ ls -lh out.bin test2.txt | cut -d " " -f5
-4.0M
+> ls -lh out.bin test.txt | cut -d " " -f5
+737K
 977K
 ```
 
-_Total ~ -312%_
+_Total ~ 15%_
 
 ---
 
-Testing the compressor program with a 70K file containing repetitions of 5 characters:
+Testing the compressor program with a 2.1M file containing repetitions of 5 characters:
 
 ```shell
-$ time ./compress test3.txt
+> time shannon-fano --input test.txt
 
-real	0m0.511s
-user	0m0.489s
-sys     0m0.017s
+real    0m2.356s
+user    0m2.069s
+sys     0m1.499s
 ```
 
 Compression:
 
 ```shell
-$ ls -lh out.bin test3.txt | cut -d " " -f5
-19K
-70K
+> ls -lh out.bin test.txt | cut -d " " -f5
+734K
+2.1M
 ```
 
-_Total ~ 73%_
+_Total ~ 65%_
 
 Decompression:
 
 ```shell
-$ time ./decompress decode.dat out.bin
+> time shannon-fano --decompress out.bin.tab --input out.bin
 
-real	0m0.128s
-user	0m0.105s
-sys     0m0.023s
+real    0m6.374s
+user    0m6.252s
+sys     0m1.394s
 ```
 
 ---
 
 ### Conclusion
 
-As you can see, this algorithm performs very badly, in general with random and large data.
-
-Also my implementation is far from efficient, if you have any suggestion on how to improve my solution
-I'd be more than happy to hear it!
+As you can see, this algorithm performs worse, in general, in terms of compression, with random and large data.
 
 ## Contributing
 

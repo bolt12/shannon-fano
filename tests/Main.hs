@@ -1,13 +1,13 @@
 module Main where
 
 import Codec.Compression.ShannonFano
-import Data.ByteString (ByteString)
-import qualified Data.ByteString as BS (pack)
+import Data.ByteString.Lazy (ByteString)
+import qualified Data.ByteString.Lazy as BSL (pack)
 import Text.Printf (printf)
 import Test.QuickCheck (Arbitrary(..), quickCheck)
 
 instance Arbitrary ByteString where
-  arbitrary = BS.pack <$> arbitrary
+  arbitrary = BSL.pack <$> arbitrary
 
 prop_id :: ByteString -> Bool
 prop_id s = let dt = genCodeTable s
