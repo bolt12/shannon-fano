@@ -1,6 +1,12 @@
 # Shannon-Fano compression algorithm library
 > Haskell implementation
 
+[![GitHub CI](https://github.com/bolt12/shannon-fano/workflows/CI/badge.svg)](https://github.com/bolt12/shannon-fano/actions)
+[![Build status](https://img.shields.io/travis/bolt12/shannon-fano.svg?logo=travis)](https://travis-ci.org/bolt12/shannon-fano)
+[![Hackage](https://img.shields.io/hackage/v/shannon-fano.svg?logo=haskell)](https://hackage.haskell.org/package/shannon-fano)
+[![Stackage Lts](http://stackage.org/package/shannon-fano/badge/lts)](http://stackage.org/lts/package/shannon-fano)
+[![Stackage Nightly](http://stackage.org/package/shannon-fano/badge/nightly)](http://stackage.org/nightly/package/shannon-fano)
+
 This library offers a set of functions to compress files into binary code
 applying the Shannon-Fano compression algorithm.
 
