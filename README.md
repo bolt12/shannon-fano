@@ -8,15 +8,14 @@ https://en.wikipedia.org/wiki/Shannon%E2%80%93Fano_coding
 
 ## Installing / Getting started
 
-### Cabal
+### Stack
 
 This package is now availablein Hackage at https://hackage.haskell.org/package/shannon-fano-0.1.0.0
 
 So you just need to:
 
 ```shell
-$ cabal update
-$ cabal install shannon-fano
+$ stack install shannon-fano
 ```
 
 ### Manually
@@ -24,16 +23,14 @@ $ cabal install shannon-fano
 ```shell
 $ git clone https://github.com/bolt12/shannon-fano.git
 $ cd shannon-fano/
-$ cabal configure
-$ cabal build
-$ cabal install
+$ stack install
 ```
 
 #### Build documentation
 
 ```shell
 $ cd shannon-fano/
-$ cabal haddock
+$ stack haddock
 ```
 
 ### See for yourself
