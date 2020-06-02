@@ -1,5 +1,11 @@
-# Revision history for shannon-fano
+# Changelog
 
-## 0.1.0.0 -- 02/11/2018
+`shannon-fano2` uses [PVP Versioning][1].
+The changelog is available [on GitHub][2].
 
-* First version.
+## 0.0.0.0
+
+* Initially created.
+
+[1]: https://pvp.haskell.org
+[2]: https://github.com/bolt12/shannon-fano2/releases
