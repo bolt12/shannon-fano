@@ -1,6 +1,7 @@
 # Shannon-Fano compression algorithm library
 > Haskell implementation
 
+[![built with nix](https://builtwithnix.org/badge.svg)](https://builtwithnix.org)
 [![GitHub CI](https://github.com/bolt12/shannon-fano/workflows/CI/badge.svg)](https://github.com/bolt12/shannon-fano/actions)
 [![Build status](https://img.shields.io/travis/bolt12/shannon-fano.svg?logo=travis)](https://travis-ci.org/bolt12/shannon-fano)
 [![Hackage](https://img.shields.io/hackage/v/shannon-fano.svg?logo=haskell)](https://hackage.haskell.org/package/shannon-fano)
@@ -30,6 +31,20 @@ $ stack install shannon-fano
 $ git clone https://github.com/bolt12/shannon-fano.git
 $ cd shannon-fano/
 $ stack install
+```
+
+### Nix
+
+```shell
+$ git clone https://github.com/bolt12/shannon-fano.git
+$ cd shannon-fano/
+$ nix-env -i -f default.nix --attr exe
+```
+
+or
+
+```shell
+$ nix-env -i -f https://github.com/bolt12/shannon-fano/archive/master.zip
 ```
 
 #### Build documentation
